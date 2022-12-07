@@ -71,4 +71,16 @@ describe 'Items API' do
     expect(updated_item.unit_price).to eq(new_item_params[:unit_price])
     expect(updated_item.merchant_id).to eq(new_item_params[:merchant_id])
   end
+
+  it 'can delete an item' do
+    num_items = Item.count
+    item_to_delete = @merch_2_items.first
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    delete "/api/v1/items/#{item_to_delete.id}"
+
+    expect(response).to be_successful
+    expect(Item.count).to eq(num_items - 1)
+    expect{Item.find(item_to_delete.id)}.to raise_error(ActiveRecord::RecordNotFound)
+  end
 end
