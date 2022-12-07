@@ -38,7 +38,6 @@ describe 'Items API' do
     expect(item_json[:data][:attributes][:description]).to be_a String
     expect(item_json[:data][:attributes][:unit_price]).to be_a Float
     expect(item_json[:data][:attributes][:merchant_id]).to be_a Integer
-
   end
 
   it 'can create a new item' do
@@ -54,5 +53,22 @@ describe 'Items API' do
     expect(created_item.description).to eq(new_item_params[:description])
     expect(created_item.unit_price).to eq(new_item_params[:unit_price])
     expect(created_item.merchant_id).to eq(new_item_params[:merchant_id])
+  end
+  
+  it 'can edit an item' do
+    item_to_edit = @merch_1_items.last
+    new_item_params = {name: 'Gizmo', description: 'For your everyday gizmo needs!', unit_price: 10000, merchant_id: @merchants.first.id}
+    headers = {"CONTENT_TYPE" => "application/json"}
+    
+    patch "/api/v1/items/#{item_to_edit.id}", headers: headers, params: JSON.generate(new_item_params)
+    
+    updated_item = Item.find(item_to_edit.id)
+
+    expect(response).to be_successful
+
+    expect(updated_item.name).to eq(new_item_params[:name])
+    expect(updated_item.description).to eq(new_item_params[:description])
+    expect(updated_item.unit_price).to eq(new_item_params[:unit_price])
+    expect(updated_item.merchant_id).to eq(new_item_params[:merchant_id])
   end
 end

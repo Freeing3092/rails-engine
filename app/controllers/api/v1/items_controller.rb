@@ -12,6 +12,12 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(Item.create(item_params)), status: :created
   end
 
+  # Need to return 404 for invalid merchant_id
+  def update
+    item = Item.update(params[:id], item_params)
+    render json: ItemSerializer.new(item).serializable_hash.to_json
+  end
+
   private
   def item_params
     params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
