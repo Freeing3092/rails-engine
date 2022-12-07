@@ -6,6 +6,12 @@ describe 'Items API' do
     @merchants = create_list(:merchant, 2)
     @merch_1_items = create_list(:item, 3, merchant: @merchants.first)
     @merch_2_items = create_list(:item, 2, merchant: @merchants.last)
+    @customer1 = create(:customer)
+    @customer2 = create(:customer)
+    @invoice1 = create(:invoice, merchant:@merchants.first, customer: @customer1)
+    @invoice2 = create(:invoice, merchant:@merchants.last, customer: @customer2)
+    @invoice_item1 = create(:invoice_item, item: @merch_1_items.first, invoice: @invoice1)
+    @invoice_item2 = create(:invoice_item, item: @merch_2_items.first, invoice: @invoice2)
   end
 
   it 'sends a list of items' do
@@ -74,7 +80,7 @@ describe 'Items API' do
 
   it 'can delete an item' do
     num_items = Item.count
-    item_to_delete = @merch_2_items.first
+    item_to_delete = @merch_1_items.first
     headers = {"CONTENT_TYPE" => "application/json"}
 
     delete "/api/v1/items/#{item_to_delete.id}"
@@ -82,5 +88,7 @@ describe 'Items API' do
     expect(response).to be_successful
     expect(Item.count).to eq(num_items - 1)
     expect{Item.find(item_to_delete.id)}.to raise_error(ActiveRecord::RecordNotFound)
+    expect{InvoiceItem.find(@invoice_item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+    expect(InvoiceItem.count).to eq(1)
   end
 end

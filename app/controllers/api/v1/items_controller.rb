@@ -18,9 +18,10 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(item).serializable_hash.to_json
   end
 
+  # Destroy corresponding invoices with only this item
   def destroy
     item = Item.find(params[:id])
-    render json: ItemSerializer.new(item.destroy).serializable_hash.to_json
+    item.destroy
   end
 
   private
