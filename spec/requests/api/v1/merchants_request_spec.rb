@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 describe 'Merchants API' do
+  before :each do
+    merchants = create_list(:merchant, 5)
+  end
+
   it 'sends a list of merchants' do
     get '/api/v1/merchants'
 
