@@ -10,8 +10,11 @@ describe 'Items API' do
     @customer2 = create(:customer)
     @invoice1 = create(:invoice, merchant:@merchants.first, customer: @customer1)
     @invoice2 = create(:invoice, merchant:@merchants.last, customer: @customer2)
+    @invoice3 = create(:invoice, merchant:@merchants.first, customer: @customer1)
     @invoice_item1 = create(:invoice_item, item: @merch_1_items.first, invoice: @invoice1)
     @invoice_item2 = create(:invoice_item, item: @merch_2_items.first, invoice: @invoice2)
+    @invoice_item3 = create(:invoice_item, item: @merch_1_items.first, invoice: @invoice3)
+    @invoice_item4 = create(:invoice_item, item: @merch_1_items.last, invoice: @invoice3)
   end
 
   it 'sends a list of items' do
@@ -89,6 +92,8 @@ describe 'Items API' do
     expect(Item.count).to eq(num_items - 1)
     expect{Item.find(item_to_delete.id)}.to raise_error(ActiveRecord::RecordNotFound)
     expect{InvoiceItem.find(@invoice_item1.id)}.to raise_error(ActiveRecord::RecordNotFound)
-    expect(InvoiceItem.count).to eq(1)
+    expect{Invoice.find(@invoice1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+    expect(InvoiceItem.count).to eq(2)
+    expect(Invoice.count).to eq(2)
   end
 end
