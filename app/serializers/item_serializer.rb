@@ -1,20 +1,6 @@
 class ItemSerializer
-  def self.serialize_items(items)
-    {
-      data:
-      items.map do |item|
-        {
-          id: item.id.to_s,
-          type: 'item',
-          attributes:
-          {
-            name: item.name,
-            description: item.description,
-            unit_price: item.unit_price,
-            merchant_id: item.merchant_id
-          }
-        }
-      end
-    }
-  end
+  include JSONAPI::Serializer
+
+  set_type :item
+  attributes :name, :description, :unit_price, :merchant_id
 end
