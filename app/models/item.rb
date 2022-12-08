@@ -10,6 +10,11 @@ class Item < ApplicationRecord
     .order("lower(name)")
   end
 
+  def self.min_price_search(query)
+    Item.where("unit_price > ?", "#{query * 100}")
+    .order("lower(name)")
+  end
+
   private
   def destroy_empty_invoices
     Invoice.destroy_empty_invoices

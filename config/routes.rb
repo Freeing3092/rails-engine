@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
 
-  get '/api/v1/items/find_all', to: 'search#index'
+  get '/api/v1/items/find_all', to: 'items_search#index'
+  get '/api/v1/items/find_all', to: 'items_search#index'
   get '/api/v1/merchants/find', to: 'merchants_search#show'
 
   namespace :api do
