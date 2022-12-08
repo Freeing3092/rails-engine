@@ -129,4 +129,19 @@ describe 'Items API' do
     expect(results[:data][2][:attributes][:name]).to eq(@merch_1_items[2].name)
     expect(results[:data][3][:attributes][:name]).to eq(@ring_item1.name)
   end
+  
+  it 'can find all items below a min_price' do
+    get '/api/v1/items/find_all?min_price=89.99'
+    
+    expect(response).to be_successful
+    
+    results = JSON.parse(response.body, symbolize_names: true)
+
+    expect(results[:data].size).to eq(4)
+    
+    expect(results[:data][0][:attributes][:name]).to eq(@merch_1_items[0].name)
+    expect(results[:data][1][:attributes][:name]).to eq(@merch_1_items[1].name)
+    expect(results[:data][2][:attributes][:name]).to eq(@merch_1_items[2].name)
+    expect(results[:data][3][:attributes][:name]).to eq(@ring_item1.name)
+  end
 end
