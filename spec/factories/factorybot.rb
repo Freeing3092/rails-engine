@@ -20,7 +20,7 @@ FactoryBot.define do
   end
 
   factory :invoice, class: Invoice do
-    status {'In Progress'}
+    status { Faker::Base.sample(['Shipped', 'Packaged', 'In Progress'])}
     association :merchant, factory: :merchant
     association :customer, factory: :customer
   end
