@@ -4,8 +4,8 @@ describe 'Items API' do
 
   before :each do
     @merchants = create_list(:merchant, 2)
-    @merch_1_items = create_list(:item, 3, merchant: @merchants.first)
-    @merch_2_items = create_list(:item, 2, merchant: @merchants.last)
+    @merch_1_items = create_list(:item, 3, name: 'Anything but the word that must not be named', merchant: @merchants.first)
+    @merch_2_items = create_list(:item, 2, name: 'Anything but the word that must not be named', merchant: @merchants.last)
     @customer1 = create(:customer)
     @customer2 = create(:customer)
     @invoice1 = create(:invoice, merchant:@merchants.first, customer: @customer1)
@@ -15,6 +15,10 @@ describe 'Items API' do
     @invoice_item2 = create(:invoice_item, item: @merch_2_items.first, invoice: @invoice2)
     @invoice_item3 = create(:invoice_item, item: @merch_1_items.first, invoice: @invoice3)
     @invoice_item4 = create(:invoice_item, item: @merch_1_items.last, invoice: @invoice3)
+
+    @ring_item1 = create(:item, name: 'The Ringer', description: "A young guy's only option to erase a really bad debt is to rig the Special Olympics by posing as a contestant.", merchant: @merchants.first)
+    @ring_item2 = create(:item, name: 'The Ring', description: "A journalist must investigate a mysterious videotape which seems to cause the death of anyone one week to the day after they view it.", merchant: @merchants.first)
+    @ring_item3 = create(:item, name: 'Lord of The Rings', description: "A meek Hobbit from the Shire and eight companions set out on a journey to destroy the powerful One Ring and save Middle-earth from the Dark Lord Sauron.", merchant: @merchants.last)
   end
 
   it 'sends a list of items' do
@@ -95,5 +99,19 @@ describe 'Items API' do
     expect{Invoice.find(@invoice1.id)}.to raise_error(ActiveRecord::RecordNotFound)
     expect(InvoiceItem.count).to eq(2)
     expect(Invoice.count).to eq(2)
+  end
+
+  it 'can find all items matching a description' do
+    get "/api/v1/items/find_all?name=ring"
+
+    expect(response).to be_successful
+
+    results = JSON.parse(response.body, symbolize_names: true)
+
+    expect(results[:data].size).to eq(3)
+
+    expect(results[:data][0][:attributes][:name]).to eq(@ring_item3.name)
+    expect(results[:data][1][:attributes][:name]).to eq(@ring_item2.name)
+    expect(results[:data][2][:attributes][:name]).to eq(@ring_item1.name)
   end
 end
