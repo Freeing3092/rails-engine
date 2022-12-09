@@ -13,8 +13,6 @@ class Item < ApplicationRecord
   def self.price_search(min_price, max_price)
     Item.where("unit_price > ?", min_price.nil? ? 0 : min_price)
     .where("unit_price < ?", max_price.nil? ? Float::MAX : max_price)
-    # Item.where("unit_price > ?", min_price.nil? ? 0 : min_price * 100)
-    # .where("unit_price < ?", max_price.nil? ? Float::MAX : max_price * 100)
     .order("lower(name)")
   end
 
