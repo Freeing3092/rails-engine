@@ -75,4 +75,14 @@ describe 'Merchants API' do
 
     expect(merchant[:data][:attributes][:name]).to eq(@first_merchant.name)
   end
+
+  it 'a search yielding no results returns an empty json object' do
+    get '/api/v1/merchants/find?name=zzzzzzzz'
+
+    expect(response).to be_successful
+
+    result = JSON.parse(response.body, symbolize_names: true)
+
+    expect(result[:data][:id]).to eq(nil)
+  end
 end
