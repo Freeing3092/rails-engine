@@ -114,6 +114,17 @@ describe 'Items API' do
     expect(results[:data][1][:attributes][:name]).to eq(@ring_item2.name)
     expect(results[:data][2][:attributes][:name]).to eq(@ring_item1.name)
   end
+
+  it 'get merchant data for a given item ID' do
+    get "/api/v1/items/#{@ring_item3.id}/merchant"
+
+    expect(response).to be_successful
+
+    result = JSON.parse(response.body, symbolize_names: true)
+
+    expect(result[:data][:id]).to eq(@merchants.last.id.to_s)
+    expect(result[:data][:attributes][:name]).to eq(@merchants.last.name)
+  end
   
   describe 'price queries' do
     it 'can find all items above a min_price' do
@@ -122,7 +133,7 @@ describe 'Items API' do
       expect(response).to be_successful
       
       results = JSON.parse(response.body, symbolize_names: true)
-      # require 'pry'; binding.pry
+
       expect(results[:data].size).to eq(4)
       
       expect(results[:data][0][:attributes][:name]).to eq(@merch_1_items[0].name)
