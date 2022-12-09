@@ -76,13 +76,22 @@ describe 'Items API' do
     patch "/api/v1/items/#{item_to_edit.id}", headers: headers, params: JSON.generate(new_item_params)
     
     updated_item = Item.find(item_to_edit.id)
-
+    
     expect(response).to be_successful
-
+    
     expect(updated_item.name).to eq(new_item_params[:name])
     expect(updated_item.description).to eq(new_item_params[:description])
     expect(updated_item.unit_price).to eq(new_item_params[:unit_price])
     expect(updated_item.merchant_id).to eq(new_item_params[:merchant_id])
+  end
+  
+  it 'a bad id when editing an item returns a 404' do
+    new_item_params = {merchant_id: 59782}
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    put "/api/v1/items/#{@merch_1_items.last.id}", headers: headers, params: JSON.generate(new_item_params)
+    
+    expect(response).to have_http_status(404)
   end
 
   it 'can delete an item' do
