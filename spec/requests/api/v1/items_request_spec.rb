@@ -4,8 +4,8 @@ describe 'Items API' do
 
   before :each do
     @merchants = create_list(:merchant, 2)
-    @merch_1_items = create_list(:item, 3, merchant: @merchants.first)
-    @merch_2_items = create_list(:item, 2, merchant: @merchants.last)
+    @merch_1_items = create_list(:item, 3, name: 'Anything but the word that must not be named', unit_price: 100.00, merchant: @merchants.first)
+    @merch_2_items = create_list(:item, 2, name: 'Anything but the word that must not be named', unit_price: 50.00, merchant: @merchants.last)
     @customer1 = create(:customer)
     @customer2 = create(:customer)
     @invoice1 = create(:invoice, merchant:@merchants.first, customer: @customer1)
@@ -15,6 +15,10 @@ describe 'Items API' do
     @invoice_item2 = create(:invoice_item, item: @merch_2_items.first, invoice: @invoice2)
     @invoice_item3 = create(:invoice_item, item: @merch_1_items.first, invoice: @invoice3)
     @invoice_item4 = create(:invoice_item, item: @merch_1_items.last, invoice: @invoice3)
+
+    @ring_item1 = create(:item, name: 'The Ringer', description: "A young guy's only option to erase a really bad debt is to rig the Special Olympics by posing as a contestant.", unit_price: 90.00, merchant: @merchants.first)
+    @ring_item2 = create(:item, name: 'The Ring', description: "A journalist must investigate a mysterious videotape which seems to cause the death of anyone one week to the day after they view it.", unit_price: 30.00, merchant: @merchants.first)
+    @ring_item3 = create(:item, name: 'Lord of The Rings', description: "A meek Hobbit from the Shire and eight companions set out on a journey to destroy the powerful One Ring and save Middle-earth from the Dark Lord Sauron.", unit_price: 40.00, merchant: @merchants.last)
   end
 
   it 'sends a list of items' do
@@ -95,5 +99,93 @@ describe 'Items API' do
     expect{Invoice.find(@invoice1.id)}.to raise_error(ActiveRecord::RecordNotFound)
     expect(InvoiceItem.count).to eq(2)
     expect(Invoice.count).to eq(2)
+  end
+
+  it 'can find all items matching a description' do
+    get "/api/v1/items/find_all?name=ring"
+
+    expect(response).to be_successful
+
+    results = JSON.parse(response.body, symbolize_names: true)
+
+    expect(results[:data].size).to eq(3)
+
+    expect(results[:data][0][:attributes][:name]).to eq(@ring_item3.name)
+    expect(results[:data][1][:attributes][:name]).to eq(@ring_item2.name)
+    expect(results[:data][2][:attributes][:name]).to eq(@ring_item1.name)
+  end
+  
+  describe 'price queries' do
+    it 'can find all items above a min_price' do
+      get '/api/v1/items/find_all?min_price=89.99'
+      
+      expect(response).to be_successful
+      
+      results = JSON.parse(response.body, symbolize_names: true)
+      # require 'pry'; binding.pry
+      expect(results[:data].size).to eq(4)
+      
+      expect(results[:data][0][:attributes][:name]).to eq(@merch_1_items[0].name)
+      expect(results[:data][1][:attributes][:name]).to eq(@merch_1_items[1].name)
+      expect(results[:data][2][:attributes][:name]).to eq(@merch_1_items[2].name)
+      expect(results[:data][3][:attributes][:name]).to eq(@ring_item1.name)
+    end
+    
+    it 'can find all items below a max_price' do
+      get '/api/v1/items/find_all?max_price=49.99'
+      
+      expect(response).to be_successful
+      
+      results = JSON.parse(response.body, symbolize_names: true)
+
+      expect(results[:data].size).to eq(2)
+      
+      expect(results[:data][0][:attributes][:name]).to eq(@ring_item3.name)
+      expect(results[:data][1][:attributes][:name]).to eq(@ring_item2.name)
+    end
+    
+    it 'can return all items between a min_price and max_price' do
+      get '/api/v1/items/find_all?min_price=40.99&max_price=99.99'
+      
+      expect(response).to be_successful
+      
+      results = JSON.parse(response.body, symbolize_names: true)
+
+      expect(results[:data].size).to eq(3)
+      
+      expect(results[:data][0][:attributes][:name]).to eq(@merch_2_items.first.name)
+      expect(results[:data][1][:attributes][:name]).to eq(@merch_2_items.last.name)
+      expect(results[:data][2][:attributes][:name]).to eq(@ring_item1.name)
+    end
+
+    it 'returns an error if the user provides both a name and price query' do
+      get '/api/v1/items/find_all?name=Byrde&min_price=89.99'
+      
+      expect(response).to have_http_status(400)
+      
+      result = JSON.parse(response.body)
+      
+      expect(result['error']).to eq("Only the name OR either/both of the price parameters can be queried")
+    end
+    
+    it 'returns an error if the max_price is below zero' do
+      get '/api/v1/items/find_all?name=Byrde&min_price=89.99&max_price=-1'
+
+      expect(response).to have_http_status(400)
+      
+      result = JSON.parse(response.body)
+      
+      expect(result['errors'][0]).to eq("Price paramaters cannot be below 0")
+    end
+    
+    it 'returns an error if the min_price is below zero' do
+      get '/api/v1/items/find_all?name=Byrde&min_price=-1&max_price=50.99'
+      
+      expect(response).to have_http_status(400)
+      
+      result = JSON.parse(response.body)
+
+      expect(result['errors'][0]).to eq("Price paramaters cannot be below 0")
+    end
   end
 end

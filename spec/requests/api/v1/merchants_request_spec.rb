@@ -5,6 +5,8 @@ describe 'Merchants API' do
     @merchants = create_list(:merchant, 5)
     @merch_1_items = create_list(:item, 3, merchant: @merchants.first)
     @merch_2_items = create_list(:item, 2, merchant: @merchants.last)
+
+    @first_merchant = create(:merchant, name: 'Aardvarks r us')
   end
 
   it 'sends a list of merchants' do
@@ -29,7 +31,7 @@ describe 'Merchants API' do
     expect(response).to be_successful
     
     merchant = JSON.parse(response.body, symbolize_names: true)
-    
+
     expect(merchant[:data][:id]).to be_a String
     expect(merchant[:data][:type]).to eq('merchant')
     expect(merchant[:data][:attributes][:name]).to be_a String
@@ -52,5 +54,15 @@ describe 'Merchants API' do
       expect(item[:attributes][:unit_price]).to be_a Float
       expect(item[:attributes][:merchant_id]).to eq(merchant.id)
     end
+  end
+
+  it 'can return one merchant on search criteria' do
+    get '/api/v1/merchants/find?name=aardvark'
+
+    expect(response).to be_successful
+
+    merchant = JSON.parse(response.body, symbolize_names: true)
+
+    expect(merchant[:data][:attributes][:name]).to eq(@first_merchant.name)
   end
 end
