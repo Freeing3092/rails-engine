@@ -12,10 +12,14 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(Item.create(item_params)), status: :created
   end
 
-  # Need to return 404 for invalid merchant_id
   def update
-    item = Item.update(params[:id], item_params)
-    render json: ItemSerializer.new(item).serializable_hash.to_json
+    begin
+      merchant = Merchant.find(params['merchant_id']) if params['merchant_id'].present?
+      item = Item.update(params[:id], item_params)
+      render json: ItemSerializer.new(item).serializable_hash.to_json
+    rescue ActiveRecord::RecordNotFound => exception 
+      render json: {message: "Your query could not be completed", errors: ['A merchant with the provided ID could not be found']}, status: 404
+    end
   end
 
   def destroy

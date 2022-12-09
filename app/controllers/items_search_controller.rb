@@ -1,7 +1,7 @@
 class ItemsSearchController < ApplicationController
   def index
-    return render json: { errors: ["Price paramaters cannot be below 0"]} , status: 400 if params[:min_price].to_f < 0 || params[:max_price].to_f < 0
-    return render json: { error: "Only the name OR either/both of the price parameters can be queried" }, status: 400 if invalid_query?
+    return render json: {message: 'Your query could not be completed', errors: ["Price paramaters cannot be below 0"]} , status: 400 if params[:min_price].to_f < 0 || params[:max_price].to_f < 0
+    return render json: {message: 'Your query could not be completed', errors: ["Only the name OR either/both of the price parameters can be queried"] }, status: 400 if invalid_query?
     
     if params[:name].present?
       items = Item.name_search(params[:name])

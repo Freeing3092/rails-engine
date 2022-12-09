@@ -37,6 +37,16 @@ describe 'Merchants API' do
     expect(merchant[:data][:attributes][:name]).to be_a String
   end
 
+  it 'bad merchant id returns 404 error' do
+    get '/api/v1/merchants/2891'
+
+    expect(response).to have_http_status(404)
+
+    result = JSON.parse(response.body)
+
+    expect(result['errors'][0]).to eq("A merchant with the provided ID could not be found")
+  end
+
   it 'can return items for a given merchant id' do
     merchant = @merchants.first
     get api_v1_merchant_items_path(merchant.id)
@@ -64,5 +74,15 @@ describe 'Merchants API' do
     merchant = JSON.parse(response.body, symbolize_names: true)
 
     expect(merchant[:data][:attributes][:name]).to eq(@first_merchant.name)
+  end
+
+  it 'a search yielding no results returns an empty json object' do
+    get '/api/v1/merchants/find?name=zzzzzzzz'
+
+    expect(response).to be_successful
+
+    result = JSON.parse(response.body, symbolize_names: true)
+
+    expect(result[:data][:id]).to eq(nil)
   end
 end

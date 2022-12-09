@@ -76,13 +76,22 @@ describe 'Items API' do
     patch "/api/v1/items/#{item_to_edit.id}", headers: headers, params: JSON.generate(new_item_params)
     
     updated_item = Item.find(item_to_edit.id)
-
+    
     expect(response).to be_successful
-
+    
     expect(updated_item.name).to eq(new_item_params[:name])
     expect(updated_item.description).to eq(new_item_params[:description])
     expect(updated_item.unit_price).to eq(new_item_params[:unit_price])
     expect(updated_item.merchant_id).to eq(new_item_params[:merchant_id])
+  end
+  
+  it 'a bad id when editing an item returns a 404' do
+    new_item_params = {merchant_id: 59782}
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    put "/api/v1/items/#{@merch_1_items.last.id}", headers: headers, params: JSON.generate(new_item_params)
+
+    expect(response).to have_http_status(404)
   end
 
   it 'can delete an item' do
@@ -114,6 +123,17 @@ describe 'Items API' do
     expect(results[:data][1][:attributes][:name]).to eq(@ring_item2.name)
     expect(results[:data][2][:attributes][:name]).to eq(@ring_item1.name)
   end
+
+  it 'get merchant data for a given item ID' do
+    get "/api/v1/items/#{@ring_item3.id}/merchant"
+
+    expect(response).to be_successful
+
+    result = JSON.parse(response.body, symbolize_names: true)
+
+    expect(result[:data][:id]).to eq(@merchants.last.id.to_s)
+    expect(result[:data][:attributes][:name]).to eq(@merchants.last.name)
+  end
   
   describe 'price queries' do
     it 'can find all items above a min_price' do
@@ -122,7 +142,7 @@ describe 'Items API' do
       expect(response).to be_successful
       
       results = JSON.parse(response.body, symbolize_names: true)
-      # require 'pry'; binding.pry
+
       expect(results[:data].size).to eq(4)
       
       expect(results[:data][0][:attributes][:name]).to eq(@merch_1_items[0].name)
@@ -165,7 +185,7 @@ describe 'Items API' do
       
       result = JSON.parse(response.body)
       
-      expect(result['error']).to eq("Only the name OR either/both of the price parameters can be queried")
+      expect(result['errors'][0]).to eq("Only the name OR either/both of the price parameters can be queried")
     end
     
     it 'returns an error if the max_price is below zero' do
