@@ -90,7 +90,7 @@ describe 'Items API' do
     headers = {"CONTENT_TYPE" => "application/json"}
 
     put "/api/v1/items/#{@merch_1_items.last.id}", headers: headers, params: JSON.generate(new_item_params)
-    
+
     expect(response).to have_http_status(404)
   end
 
@@ -185,7 +185,7 @@ describe 'Items API' do
       
       result = JSON.parse(response.body)
       
-      expect(result['error']).to eq("Only the name OR either/both of the price parameters can be queried")
+      expect(result['errors'][0]).to eq("Only the name OR either/both of the price parameters can be queried")
     end
     
     it 'returns an error if the max_price is below zero' do

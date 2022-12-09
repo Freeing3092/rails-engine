@@ -44,7 +44,7 @@ describe 'Merchants API' do
 
     result = JSON.parse(response.body)
 
-    expect(result['error']).to eq("A merchant with the provided ID could not be found")
+    expect(result['errors'][0]).to eq("A merchant with the provided ID could not be found")
   end
 
   it 'can return items for a given merchant id' do

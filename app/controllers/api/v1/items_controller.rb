@@ -18,7 +18,7 @@ class Api::V1::ItemsController < ApplicationController
       item = Item.update(params[:id], item_params)
       render json: ItemSerializer.new(item).serializable_hash.to_json
     rescue ActiveRecord::RecordNotFound => exception 
-      render json: {error: 'A merchant with the provided ID could not be found'}, status: 404
+      render json: {message: "Your query could not be completed", errors: ['A merchant with the provided ID could not be found']}, status: 404
     end
   end
 
